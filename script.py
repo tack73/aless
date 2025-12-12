@@ -130,77 +130,102 @@ def analyze_and_visualize(file_path):
 
     # --- 可視化パート ---
     
-    # フォント設定（日本語フォントを自動探索）
-    jp_font_path = None
-    try:
-        fonts = fm.findSystemFonts()
-        target_fonts = ['Meiryo', 'Hiragino', 'YuGothic', 'NotoSansCJK', 'Takao', 'IPAGothic']
-        for font in fonts:
-            if any(t in font for t in target_fonts):
-                jp_font_path = font
-                break
-        if jp_font_path:
-            fp = fm.FontProperties(fname=jp_font_path)
-            plt.rcParams['font.family'] = fp.get_name()
-            print(f"ℹ️ 日本語フォント設定: {fp.get_name()}")
-        else:
-            print("⚠️ 日本語フォントが見つかりません。英語表記になります。")
-    except:
-        pass
-
-    sns.set(style="whitegrid", font=plt.rcParams['font.family'])
+    # フォント設定（Times New Romanに固定）
+    plt.rcParams['font.family'] = 'Times New Roman'
+    print(f"ℹ️ フォント設定: Times New Roman")
+    
+    sns.set(style="whitegrid", font='Times New Roman')
 
     # 図1-1: 自然接触頻度とスコアの箱ひげ図
+    df_plot = df_clean.copy()
+    df_plot['Nature_Contact'] = df_plot['Nature_Contact'].map({
+        'よく遊んでいた': 'Frequently',
+        'たまに遊んでいた': 'Occasionaly',
+        'ほとんど遊ばなかった': 'Rarely'
+    })
+    order_nature = ['Frequently', 'Occasionaly', 'Rarely']
     plt.figure(figsize=(10, 6))
-    order_nature = ['よく遊んでいた', 'たまに遊んでいた', 'ほとんど遊ばなかった']
-    sns.boxplot(x='Nature_Contact', y='Insect_Dislike_Score', data=df_clean, order=order_nature, palette='viridis')
-    plt.title('子供の頃の自然接触頻度 vs 現在の虫嫌いスコア')
-    plt.ylabel('虫嫌いスコア (高いほど嫌い)')
-    plt.xlabel('自然(山・川・海・田んぼ)での遊び頻度')
+    sns.boxplot(x='Nature_Contact', y='Insect_Dislike_Score', data=df_plot, order=order_nature, palette='viridis')
+    # plt.title('Nature Contact Frequency vs Insect Dislike Score', fontsize=14, fontname='Times New Roman')
+    plt.ylabel('Insect Dislike Score', fontsize=12, fontname='Times New Roman')
+    plt.xlabel('Outdoor Play Frequency in Childhood', fontsize=12, fontname='Times New Roman')
+    plt.xticks(fontname='Times New Roman')
+    plt.yticks(fontname='Times New Roman')
     plt.tight_layout()
     plt.savefig('1-1_boxplot_nature_vs_score.png')
     print("✅ 図1-1 保存完了: 1-1_boxplot_nature_vs_score.png")
 
     # 図1-2: 読書習慣とスコアの箱ひげ図
+    df_plot = df_clean.copy()
+    df_plot['Reading_Habit'] = df_plot['Reading_Habit'].map({
+        'よく読んでいた': 'Frequently',
+        'たまに読んでいた': 'Occasionaly',
+        'ほとんど読まなかった': 'Rarely'
+    })
+    order_reading = ['Frequently', 'Occasionaly', 'Rarely']
     plt.figure(figsize=(10, 6))
-    order_reading = ['よく読んでいた', 'たまに読んでいた', 'ほとんど読まなかった']
-    sns.boxplot(x='Reading_Habit', y='Insect_Dislike_Score', data=df_clean, order=order_reading, palette='viridis')
-    plt.title('子供の頃の読書習慣 vs 現在の虫嫌いスコア')
-    plt.ylabel('虫嫌いスコア (高いほど嫌い)')
-    plt.xlabel('読書頻度')
+    sns.boxplot(x='Reading_Habit', y='Insect_Dislike_Score', data=df_plot, order=order_reading, palette='viridis')
+    # plt.title('Reading Habit in Childhood vs Insect Dislike Score', fontsize=14, fontname='Times New Roman')
+    plt.ylabel('Insect Dislike Score', fontsize=12, fontname='Times New Roman')
+    plt.xlabel('Reading Frequency', fontsize=12, fontname='Times New Roman')
+    plt.xticks(fontname='Times New Roman')
+    plt.yticks(fontname='Times New Roman')
     plt.tight_layout()
     plt.savefig('1-2_boxplot_reading_vs_score.png')
     print("✅ 図1-2 保存完了: 1-2_boxplot_reading_vs_score.png")
 
     # 図1-3: 虫本読書頻度とスコアの箱ひげ図
+    df_plot = df_clean.copy()
+    df_plot['Insect_Book_Reading'] = df_plot['Insect_Book_Reading'].map({
+        'よく読んでいた': 'Frequently',
+        'たまに読んでいた': 'Occasionaly',
+        'ほとんど読まなかった': 'Rarely'
+    })
+    order_insect_book = ['Frequently', 'Occasionaly', 'Rarely']
     plt.figure(figsize=(10, 6))
-    order_insect_book = ['よく読んでいた', 'たまに読んでいた', 'ほとんど読まなかった']
-    sns.boxplot(x='Insect_Book_Reading', y='Insect_Dislike_Score', data=df_clean, order=order_insect_book, palette='viridis')
-    plt.title('子供の頃の虫本読書頻度 vs 現在の虫嫌いスコア')
-    plt.ylabel('虫嫌いスコア (高いほど嫌い)')
-    plt.xlabel('虫の本の読書頻度')
+    sns.boxplot(x='Insect_Book_Reading', y='Insect_Dislike_Score', data=df_plot, order=order_insect_book, palette='viridis')
+    # plt.title('Insect Book Reading Frequency vs Insect Dislike Score', fontsize=14, fontname='Times New Roman')
+    plt.ylabel('Insect Dislike Score', fontsize=12, fontname='Times New Roman')
+    plt.xlabel('Insect-Related Book Reading Frequency', fontsize=12, fontname='Times New Roman')
+    plt.xticks(fontname='Times New Roman')
+    plt.yticks(fontname='Times New Roman')
     plt.tight_layout()
     plt.savefig('1-3_boxplot_insect_book_vs_score.png')
     print("✅ 図1-3 保存完了: 1-3_boxplot_insect_book_vs_score.png")
 
     # 図1-4: 性別とスコアの箱ひげ図
+    df_plot = df_clean.copy()
+    df_plot['Gender'] = df_plot['Gender'].map({
+        '男性': 'Male',
+        '女性': 'Female'
+    })
     plt.figure(figsize=(10, 6))
-    sns.boxplot(x='Gender', y='Insect_Dislike_Score', data=df_clean, order=['男性', '女性'], palette='viridis')
-    plt.title('性別 vs 現在の虫嫌いスコア')
-    plt.ylabel('虫嫌いスコア (高いほど嫌い)')
-    plt.xlabel('性別')
+    sns.boxplot(x='Gender', y='Insect_Dislike_Score', data=df_plot, order=['Male', 'Female'], palette='viridis')
+    # plt.title('Gender vs Insect Dislike Score', fontsize=14, fontname='Times New Roman')
+    plt.ylabel('Insect Dislike Score', fontsize=12, fontname='Times New Roman')
+    plt.xlabel('Gender', fontsize=12, fontname='Times New Roman')
+    plt.xticks(fontname='Times New Roman')
+    plt.yticks(fontname='Times New Roman')
     plt.tight_layout()
     plt.savefig('1-4_boxplot_gender_vs_score.png')
     print("✅ 図1-4 保存完了: 1-4_boxplot_gender_vs_score.png")
 
     # 図1-5: 居住地域とスコアの箱ひげ図
+    df_plot = df_clean.copy()
+    df_plot['Residence_Area'] = df_plot['Residence_Area'].map({
+        '農村・漁村': 'Rural',
+        '地方中心市街地': 'Regional City',
+        '郊外住宅地・団地': 'Suburban',
+        '都心・都市部': 'Urban'
+    })
+    order_area = ['Rural', 'Regional City', 'Suburban', 'Urban']
     plt.figure(figsize=(12, 6))
-    order_area = ['農村・漁村', '地方中心市街地', '郊外住宅地・団地', '都心・都市部']
-    sns.boxplot(x='Residence_Area', y='Insect_Dislike_Score', data=df_clean, order=order_area, palette='viridis')
-    plt.title('子供の頃の居住地域 vs 現在の虫嫌いスコア')
-    plt.ylabel('虫嫌いスコア (高いほど嫌い)')
-    plt.xlabel('居住地域')
-    plt.xticks(rotation=15)
+    sns.boxplot(x='Residence_Area', y='Insect_Dislike_Score', data=df_plot, order=order_area, palette='viridis')
+    # plt.title('Childhood Residence Area vs Insect Dislike Score', fontsize=14, fontname='Times New Roman')
+    plt.ylabel('Insect Dislike Score', fontsize=12, fontname='Times New Roman')
+    plt.xlabel('Residence Area Type', fontsize=12, fontname='Times New Roman')
+    plt.xticks(rotation=15, fontname='Times New Roman')
+    plt.yticks(fontname='Times New Roman')
     plt.tight_layout()
     plt.savefig('1-5_boxplot_residence_vs_score.png')
     print("✅ 図1-5 保存完了: 1-5_boxplot_residence_vs_score.png")
@@ -208,12 +233,15 @@ def analyze_and_visualize(file_path):
     # 図2: 相関行列のヒートマップ
     plt.figure(figsize=(11, 9))
     corr_cols = ['Insect_Dislike_Score', 'Nature_Contact_Num', 'Reading_Habit_Num', 'Insect_Book_Reading_Num', 'Gender_Num', 'Residence_Area_Num']
-    corr_labels = ['虫嫌いスコア', '自然接触', '読書習慣', '虫本読書', '性別(女性=1)', '居住地域(都市化)']
+    corr_labels = ['Insect Dislike', 'Nature Contact', 'Reading Habit', 'Insect Book', 'Gender (F=1)', 'Urban Residence']
     corr_mat = df_clean[corr_cols].corr(method='spearman')
     corr_mat.index = corr_labels
     corr_mat.columns = corr_labels
-    sns.heatmap(corr_mat, annot=True, cmap='coolwarm', vmin=-1, vmax=1, fmt='.2f', square=True)
-    plt.title('要因間の相関行列（スピアマンの順位相関）')
+    sns.heatmap(corr_mat, annot=True, cmap='coolwarm', vmin=-1, vmax=1, fmt='.2f', square=True, 
+                cbar_kws={'label': 'Spearman Correlation'}, annot_kws={'fontname': 'Times New Roman'})
+    # plt.title('Correlation Matrix (Spearman Rank Correlation)', fontsize=14, fontname='Times New Roman')
+    plt.xticks(fontname='Times New Roman')
+    plt.yticks(fontname='Times New Roman')
     plt.tight_layout()
     plt.savefig('2_heatmap_correlation.png')
     print("✅ 図2 保存完了: 2_heatmap_correlation.png")
@@ -221,11 +249,15 @@ def analyze_and_visualize(file_path):
     # 図3: 回帰係数の棒グラフ（影響度の可視化）
     plt.figure(figsize=(10, 6))
     coefs = model.params.drop('const')
+    coef_labels = ['Nature Contact', 'Reading Habit', 'Insect Book', 'Gender (F=1)', 'Urban Residence']
+    coefs.index = coef_labels
     colors = ['blue' if c < 0 else 'red' for c in coefs]
     coefs.plot(kind='barh', color=colors)
     plt.axvline(0, color='black', linewidth=0.8)
-    plt.title('各要因が虫嫌いスコアに与える影響（標準化偏回帰係数）')
-    plt.xlabel('影響度 (左に伸びるほど虫嫌いを軽減)')
+    # plt.title('Impact of Factors on Insect Dislike (Standardized Regression Coefficients)', fontsize=14, fontname='Times New Roman')
+    plt.xlabel('Coefficient (negative = reduces insect dislike)', fontsize=12, fontname='Times New Roman')
+    plt.xticks(fontname='Times New Roman')
+    plt.yticks(fontname='Times New Roman')
     plt.tight_layout()
     plt.savefig('3_regression_coefficients.png')
     print("✅ 図3 保存完了: 3_regression_coefficients.png")
