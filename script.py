@@ -230,6 +230,99 @@ def analyze_and_visualize(file_path):
     plt.savefig('1-5_boxplot_residence_vs_score.png')
     print("✅ 図1-5 保存完了: 1-5_boxplot_residence_vs_score.png")
 
+    # 散布図: 各要因とスコアの関係（相関係数表示）
+    from scipy.stats import spearmanr
+    
+    # 図S1: 自然接触頻度 vs スコア
+    plt.figure(figsize=(10, 6))
+    data_plot = df_clean[['Nature_Contact_Num', 'Insect_Dislike_Score']].dropna()
+    corr, p_val = spearmanr(data_plot['Nature_Contact_Num'], data_plot['Insect_Dislike_Score'])
+    sns.regplot(x='Nature_Contact_Num', y='Insect_Dislike_Score', data=data_plot, 
+                scatter_kws={'alpha':0.6, 's':50}, line_kws={'color':'red'})
+    plt.text(0.05, 0.95, f'r = {corr:.3f}, p = {p_val:.4f}', 
+             transform=plt.gca().transAxes, fontsize=12, verticalalignment='top',
+             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5),
+             fontname='Times New Roman')
+    plt.ylabel('Insect Dislike Score', fontsize=12, fontname='Times New Roman')
+    plt.xlabel('Nature Contact Frequency (1=Rarely, 3=Frequent)', fontsize=12, fontname='Times New Roman')
+    plt.xticks([1, 2, 3], ['Rarely', 'Sometimes', 'Frequent'], fontname='Times New Roman')
+    plt.yticks(fontname='Times New Roman')
+    plt.tight_layout()
+    plt.savefig('S1_scatter_nature_vs_score.png', dpi=300)
+    print("✅ 図S1 保存完了: S1_scatter_nature_vs_score.png")
+    
+    # 図S2: 読書習慣 vs スコア
+    plt.figure(figsize=(10, 6))
+    data_plot = df_clean[['Reading_Habit_Num', 'Insect_Dislike_Score']].dropna()
+    corr, p_val = spearmanr(data_plot['Reading_Habit_Num'], data_plot['Insect_Dislike_Score'])
+    sns.regplot(x='Reading_Habit_Num', y='Insect_Dislike_Score', data=data_plot, 
+                scatter_kws={'alpha':0.6, 's':50}, line_kws={'color':'red'})
+    plt.text(0.05, 0.95, f'r = {corr:.3f}, p = {p_val:.4f}', 
+             transform=plt.gca().transAxes, fontsize=12, verticalalignment='top',
+             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5),
+             fontname='Times New Roman')
+    plt.ylabel('Insect Dislike Score', fontsize=12, fontname='Times New Roman')
+    plt.xlabel('Reading Habit Frequency (1=Rarely, 3=Frequent)', fontsize=12, fontname='Times New Roman')
+    plt.xticks([1, 2, 3], ['Rarely', 'Sometimes', 'Frequent'], fontname='Times New Roman')
+    plt.yticks(fontname='Times New Roman')
+    plt.tight_layout()
+    plt.savefig('S2_scatter_reading_vs_score.png', dpi=300)
+    print("✅ 図S2 保存完了: S2_scatter_reading_vs_score.png")
+    
+    # 図S3: 虫本読書頻度 vs スコア
+    plt.figure(figsize=(10, 6))
+    data_plot = df_clean[['Insect_Book_Reading_Num', 'Insect_Dislike_Score']].dropna()
+    corr, p_val = spearmanr(data_plot['Insect_Book_Reading_Num'], data_plot['Insect_Dislike_Score'])
+    sns.regplot(x='Insect_Book_Reading_Num', y='Insect_Dislike_Score', data=data_plot, 
+                scatter_kws={'alpha':0.6, 's':50}, line_kws={'color':'red'})
+    plt.text(0.05, 0.95, f'r = {corr:.3f}, p = {p_val:.4f}', 
+             transform=plt.gca().transAxes, fontsize=12, verticalalignment='top',
+             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5),
+             fontname='Times New Roman')
+    plt.ylabel('Insect Dislike Score', fontsize=12, fontname='Times New Roman')
+    plt.xlabel('Insect Book Reading Frequency (1=Rarely, 3=Frequent)', fontsize=12, fontname='Times New Roman')
+    plt.xticks([1, 2, 3], ['Rarely', 'Sometimes', 'Frequent'], fontname='Times New Roman')
+    plt.yticks(fontname='Times New Roman')
+    plt.tight_layout()
+    plt.savefig('S3_scatter_insect_book_vs_score.png', dpi=300)
+    print("✅ 図S3 保存完了: S3_scatter_insect_book_vs_score.png")
+    
+    # 図S4: 性別 vs スコア
+    plt.figure(figsize=(10, 6))
+    data_plot = df_clean[['Gender_Num', 'Insect_Dislike_Score']].dropna()
+    corr, p_val = spearmanr(data_plot['Gender_Num'], data_plot['Insect_Dislike_Score'])
+    sns.regplot(x='Gender_Num', y='Insect_Dislike_Score', data=data_plot, 
+                scatter_kws={'alpha':0.6, 's':50}, line_kws={'color':'red'})
+    plt.text(0.05, 0.95, f'r = {corr:.3f}, p = {p_val:.4f}', 
+             transform=plt.gca().transAxes, fontsize=12, verticalalignment='top',
+             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5),
+             fontname='Times New Roman')
+    plt.ylabel('Insect Dislike Score', fontsize=12, fontname='Times New Roman')
+    plt.xlabel('Gender (0=Male, 1=Female)', fontsize=12, fontname='Times New Roman')
+    plt.xticks([0, 1], ['Male', 'Female'], fontname='Times New Roman')
+    plt.yticks(fontname='Times New Roman')
+    plt.tight_layout()
+    plt.savefig('S4_scatter_gender_vs_score.png', dpi=300)
+    print("✅ 図S4 保存完了: S4_scatter_gender_vs_score.png")
+    
+    # 図S5: 居住地域 vs スコア
+    plt.figure(figsize=(10, 6))
+    data_plot = df_clean[['Residence_Area_Num', 'Insect_Dislike_Score']].dropna()
+    corr, p_val = spearmanr(data_plot['Residence_Area_Num'], data_plot['Insect_Dislike_Score'])
+    sns.regplot(x='Residence_Area_Num', y='Insect_Dislike_Score', data=data_plot, 
+                scatter_kws={'alpha':0.6, 's':50}, line_kws={'color':'red'})
+    plt.text(0.05, 0.95, f'r = {corr:.3f}, p = {p_val:.4f}', 
+             transform=plt.gca().transAxes, fontsize=12, verticalalignment='top',
+             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5),
+             fontname='Times New Roman')
+    plt.ylabel('Insect Dislike Score', fontsize=12, fontname='Times New Roman')
+    plt.xlabel('Residence Area (1=Rural, 4=Urban)', fontsize=12, fontname='Times New Roman')
+    plt.xticks([1, 2, 3, 4], ['Rural', 'Regional', 'Suburban', 'Urban'], fontname='Times New Roman')
+    plt.yticks(fontname='Times New Roman')
+    plt.tight_layout()
+    plt.savefig('S5_scatter_residence_vs_score.png', dpi=300)
+    print("✅ 図S5 保存完了: S5_scatter_residence_vs_score.png")
+
     # 図2: 相関行列のヒートマップ
     plt.figure(figsize=(11, 9))
     corr_cols = ['Insect_Dislike_Score', 'Nature_Contact_Num', 'Reading_Habit_Num', 'Insect_Book_Reading_Num', 'Gender_Num', 'Residence_Area_Num']
