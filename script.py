@@ -107,25 +107,92 @@ def analyze_and_visualize(file_path):
     print("正の相関 → その要因が強いほど虫嫌いが増える")
     print("✅ 相関分析結果を保存: correlation_results.txt")
 
-    # (B) 重回帰分析（標準化偏回帰係数）
-    # 目的変数: スコア, 説明変数: 各要因
-    y = df_clean['Insect_Dislike_Score']
-    X = df_clean[['Nature_Contact_Num', 'Reading_Habit_Num', 'Insect_Book_Reading_Num', 'Gender_Num', 'Residence_Area_Num']]
+    # (B) 重回帰分析（ダミー変数化）
+    # 順序尺度を等間隔と仮定せず、カテゴリとして扱う
+    print("\n📊 --- 重回帰分析結果（ダミー変数化） ---")
+    
+    # ダミー変数の作成（参照カテゴリ: Rarely=1）
+    df_dummy = pd.DataFrame()
+    df_dummy['Insect_Dislike_Score'] = df_clean['Insect_Dislike_Score']
+    
+    # 自然接触頻度のダミー変数
+    df_dummy['Nature_Sometimes'] = (df_clean['Nature_Contact_Num'] == 2).astype(int)
+    df_dummy['Nature_Frequent'] = (df_clean['Nature_Contact_Num'] == 3).astype(int)
+    
+    # 読書習慣のダミー変数
+    df_dummy['Reading_Sometimes'] = (df_clean['Reading_Habit_Num'] == 2).astype(int)
+    df_dummy['Reading_Frequent'] = (df_clean['Reading_Habit_Num'] == 3).astype(int)
+    
+    # 虫本読書頻度のダミー変数
+    df_dummy['InsectBook_Sometimes'] = (df_clean['Insect_Book_Reading_Num'] == 2).astype(int)
+    df_dummy['InsectBook_Frequent'] = (df_clean['Insect_Book_Reading_Num'] == 3).astype(int)
+    
+    # 居住地域のダミー変数（参照: Rural=1）
+    df_dummy['Area_Regional'] = (df_clean['Residence_Area_Num'] == 2).astype(int)
+    df_dummy['Area_Suburban'] = (df_clean['Residence_Area_Num'] == 3).astype(int)
+    df_dummy['Area_Urban'] = (df_clean['Residence_Area_Num'] == 4).astype(int)
     
     # 欠損除去
-    data_reg = pd.concat([y, X], axis=1).dropna()
-    y = data_reg['Insect_Dislike_Score']
-    X = data_reg[['Nature_Contact_Num', 'Reading_Habit_Num', 'Insect_Book_Reading_Num', 'Gender_Num', 'Residence_Area_Num']]
+    df_reg = df_dummy.dropna()
+    y = df_reg['Insect_Dislike_Score']
+    X = df_reg.drop('Insect_Dislike_Score', axis=1)
     
-    # 標準化（影響度の大きさを比較するため）
-    y_std = (y - y.mean()) / y.std()
-    X_std = (X - X.mean()) / X.std()
-    X_std = sm.add_constant(X_std) # 定数項追加
-
-    model = sm.OLS(y_std, X_std).fit()
-    print("\n📊 --- 重回帰分析結果（標準化係数） ---")
-    print(model.params.drop('const')) # 定数項以外を表示
-    print("-> 値がマイナスであるほど、その要因が強いと「虫嫌いが減る」ことを意味します。")
+    # 定数項を追加してOLS回帰
+    X_with_const = sm.add_constant(X)
+    model = sm.OLS(y, X_with_const).fit()
+    
+    # 結果をファイルに出力
+    with open('regression_results.txt', 'w', encoding='utf-8') as f:
+        f.write("=" * 70 + "\n")
+        f.write("重回帰分析結果（ダミー変数化）\n")
+        f.write("=" * 70 + "\n\n")
+        f.write(f"サンプルサイズ: N={len(df_reg)}\n")
+        f.write(f"決定係数 R²: {model.rsquared:.4f}\n")
+        f.write(f"調整済みR²: {model.rsquared_adj:.4f}\n")
+        f.write(f"F統計量: {model.fvalue:.4f}, p値: {model.f_pvalue:.4f}\n\n")
+        f.write("-" * 70 + "\n")
+        f.write("回帰係数（非標準化）\n")
+        f.write("-" * 70 + "\n")
+        f.write(f"{'変数名':<30s} {'係数':>10s} {'標準誤差':>10s} {'p値':>10s} {'有意性':>8s}\n")
+        f.write("-" * 70 + "\n")
+        
+        for var in X.columns:
+            coef = model.params[var]
+            se = model.bse[var]
+            pval = model.pvalues[var]
+            sig = '***' if pval < 0.001 else '**' if pval < 0.01 else '*' if pval < 0.05 else 'n.s.'
+            f.write(f"{var:<30s} {coef:>10.3f} {se:>10.3f} {pval:>10.4f} {sig:>8s}\n")
+            print(f"{var:<30s}: coef={coef:7.3f}, p={pval:.4f} {sig}")
+        
+        f.write("-" * 70 + "\n\n")
+        f.write("【解釈ガイド】\n")
+        f.write("- 参照カテゴリ: 自然接触=Rarely, 読書=Rarely, 虫本=Rarely, 地域=Rural\n")
+        f.write("- 係数が負 → 虫嫌いスコアが減少\n")
+        f.write("- 係数が正 → 虫嫌いスコアが増加\n")
+        f.write("- 例: InsectBook_Frequent = -15.0 の場合、\n")
+        f.write("  「虫本をよく読んだ人は、ほとんど読まなかった人より\n")
+        f.write("   虫嫌いスコアが15点低い（他の条件が同じ場合）」\n")
+    
+    print("\n✅ 回帰分析結果を保存: regression_results.txt")
+    
+    # 可視化用に標準化係数も計算
+    # 標準化係数 = 非標準化係数 × (SD_X / SD_Y)
+    y_std_val = y.std()
+    standardized_coefs = {}
+    for var in X.columns:
+        x_std_val = X[var].std()
+        if x_std_val > 0:  # ダミー変数の標準偏差が0でない場合
+            standardized_coefs[var] = model.params[var] * (x_std_val / y_std_val)
+        else:
+            standardized_coefs[var] = 0
+    
+    # 主要な係数のみを可視化用に抽出（Frequentカテゴリのみ）
+    viz_coefs = pd.Series({
+        'Nature Contact\n(Frequent)': standardized_coefs.get('Nature_Frequent', 0),
+        'Reading Habit\n(Frequent)': standardized_coefs.get('Reading_Frequent', 0),
+        'Insect Book\n(Frequent)': standardized_coefs.get('InsectBook_Frequent', 0),
+        'Urban Residence\n(Urban)': standardized_coefs.get('Area_Urban', 0)
+    })
 
 
     # --- 可視化パート ---
@@ -340,19 +407,79 @@ def analyze_and_visualize(file_path):
     print("✅ 図2 保存完了: 2_heatmap_correlation.png")
 
     # 図3: 回帰係数の棒グラフ（影響度の可視化）
-    plt.figure(figsize=(10, 6))
-    coefs = model.params.drop('const')
-    coef_labels = ['Nature Contact', 'Reading Habit', 'Insect Book', 'Gender (F=1)', 'Urban Residence']
-    coefs.index = coef_labels
-    colors = ['blue' if c < 0 else 'red' for c in coefs]
-    coefs.plot(kind='barh', color=colors)
-    plt.axvline(0, color='black', linewidth=0.8)
-    # plt.title('Impact of Factors on Insect Dislike (Standardized Regression Coefficients)', fontsize=14, fontname='Times New Roman')
+    plt.figure(figsize=(12, 8))
+    
+    # 変数の順序を定義（グループごとに整理）
+    var_order = [
+        'Nature_Sometimes', 'Nature_Frequent',
+        'Reading_Sometimes', 'Reading_Frequent',
+        'InsectBook_Sometimes', 'InsectBook_Frequent',
+        'Area_Regional', 'Area_Suburban', 'Area_Urban'
+    ]
+    
+    labels_jp = {
+        'Nature_Sometimes': 'Nature Contact\n(Sometimes)',
+        'Nature_Frequent': 'Nature Contact\n(Frequent)',
+        'Reading_Sometimes': 'Reading Habit\n(Sometimes)',
+        'Reading_Frequent': 'Reading Habit\n(Frequent)',
+        'InsectBook_Sometimes': 'Insect Book\n(Sometimes)',
+        'InsectBook_Frequent': 'Insect Book\n(Frequent)',
+        'Area_Regional': 'Residence\n(Regional City)',
+        'Area_Suburban': 'Residence\n(Suburban)',
+        'Area_Urban': 'Residence\n(Urban)'
+    }
+    
+    # 順序に従ってデータを整理
+    coef_data = []
+    for var in var_order:
+        if var in X.columns:
+            coef_data.append({
+                'variable': labels_jp.get(var, var),
+                'coefficient': model.params[var],
+                'pvalue': model.pvalues[var],
+                'significant': model.pvalues[var] < 0.05
+            })
+    
+    coef_df = pd.DataFrame(coef_data)
+    
+    # 色付け：有意なものと有意でないものを区別
+    colors = ['#440154' if sig else '#CCCCCC' for sig in coef_df['significant']]
+    
+    # 横棒グラフ（下から上へ表示するため、順序を反転）
+    y_positions = range(len(coef_df))
+    bars = plt.barh(y_positions, coef_df['coefficient'], color=colors)
+    plt.yticks(y_positions, coef_df['variable'], fontname='Times New Roman', fontsize=10)
+    plt.axvline(0, color='black', linewidth=1.2)
+    
+    # 有意性のマーカーを追加
+    for i, (idx, row) in enumerate(coef_df.iterrows()):
+        if row['pvalue'] < 0.001:
+            marker = '***'
+        elif row['pvalue'] < 0.01:
+            marker = '**'
+        elif row['pvalue'] < 0.05:
+            marker = '*'
+        else:
+            marker = ''
+        
+        if marker:
+            x_pos = row['coefficient'] + (1.5 if row['coefficient'] > 0 else -1.5)
+            plt.text(x_pos, i, marker, ha='center', va='center', 
+                    fontsize=12, fontweight='bold')
+    
     plt.xlabel('Coefficient (negative = reduces insect dislike)', fontsize=12, fontname='Times New Roman')
     plt.xticks(fontname='Times New Roman')
-    plt.yticks(fontname='Times New Roman')
+    
+    # 凡例を追加
+    from matplotlib.patches import Patch
+    legend_elements = [
+        Patch(facecolor='#440154', label='Significant (p < 0.05)'),
+        Patch(facecolor='#CCCCCC', label='Not significant')
+    ]
+    plt.legend(handles=legend_elements, loc='lower right', prop={'family': 'Times New Roman'})
+    
     plt.tight_layout()
-    plt.savefig('3_regression_coefficients.png')
+    plt.savefig('3_regression_coefficients.png', dpi=300)
     print("✅ 図3 保存完了: 3_regression_coefficients.png")
 
     print("\n✨ 全ての処理が完了しました。")
